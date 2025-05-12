@@ -5,30 +5,58 @@
   <title>Видео по нажатию</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+      flex-direction: column;
+    }
+
     #playBtn {
-      font-size: 24px;
-      padding: 20px 40px;
+      width: 50vw;
+      height: 50vh;
+      font-size: 3vw;
       background-color: #4CAF50;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 20px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
     #playBtn:hover {
       background-color: #45a049;
+      transform: scale(1.02);
+    }
+
+    video {
+      margin-top: 20px;
+      max-width: 90vw;
+      max-height: 80vh;
     }
   </style>
 </head>
 <body>
   <button id="playBtn">Смотреть видео</button>
 
-  <video id="myVideo" width="1500" height="750" controls style="display:none">
+  <video id="myVideo" controls style="display: none;">
     <source src="videos/myvideo.MP4" type="video/mp4">
     Ваш браузер не поддерживает видео.
   </video>
 
-  <script src="script.js"></script>
+  <script>
+    const playBtn = document.getElementById('playBtn');
+    const video = document.getElementById('myVideo');
+
+    playBtn.addEventListener('click', () => {
+      playBtn.style.display = 'none';
+      video.style.display = 'block';
+      video.play();
+    });
+  </script>
 </body>
 </html>
