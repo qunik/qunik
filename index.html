@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Видео по нажатию</title>
   <link rel="stylesheet" href="style.css">
   <style>
@@ -19,7 +20,7 @@
     #playBtn {
       width: 50vw;
       height: 50vh;
-      font-size: 3vw;
+      font-size: 2vw;
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -37,6 +38,15 @@
       margin-top: 20px;
       max-width: 90vw;
       max-height: 80vh;
+    }
+
+    /* Адаптация для телефонов */
+    @media (max-width: 600px) {
+      #playBtn {
+        width: 80vw;
+        height: 200px;
+        font-size: 6vw;
+      }
     }
   </style>
 </head>
