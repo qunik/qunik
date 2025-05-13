@@ -2,9 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Видео по нажатию</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Qunik.com — Видео по нажатию</title>
   <style>
     * {
       box-sizing: border-box;
@@ -13,11 +11,26 @@
     body {
       margin: 0;
       padding: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
       font-family: sans-serif;
-      background-color: #f0f0f0;
+    }
+
+    .side-banner {
+      width: 10vw;
+      background-image: url('images/banner.jpg'); /* замени на свой путь */
+      background-size: cover;
+      background-position: center;
+    }
+
+    .content {
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
     }
 
     header {
@@ -26,35 +39,24 @@
       align-items: center;
       padding: 10px 20px;
       background-color: white;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     header img {
-      height: 40px;
-      width: auto;
+      height: 50px;
       margin-right: 15px;
     }
 
     header h1 {
-      font-size: 24px;
+      font-size: 2em;
       color: black;
       margin: 0;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      padding: 20px;
     }
 
     #playBtn {
       width: 50vw;
       height: 50vh;
-      font-size: 2vw;
+      font-size: 3vw;
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -73,39 +75,25 @@
       max-width: 90vw;
       max-height: 80vh;
     }
-
-    @media (max-width: 600px) {
-      #playBtn {
-        width: 80vw;
-        height: 200px;
-        font-size: 6vw;
-      }
-
-      header h1 {
-        font-size: 20px;
-      }
-
-      header img {
-        height: 30px;
-      }
-    }
   </style>
 </head>
 <body>
+  <div class="side-banner"></div>
 
-  <header>
-    <img src="images/logo.PNG" alt="Логотип">
-    <h1>Qunik.com</h1>
-  </header>
+  <div class="content">
+    <header>
+      <img src="images/logo.PNG" alt="Логотип"> <!-- Замени на свою картинку -->
+      <h1>Qunik.com</h1>
+    </header>
 
-  <main>
     <button id="playBtn">Смотреть видео</button>
-
     <video id="myVideo" controls style="display: none;">
       <source src="videos/myvideo.MP4" type="video/mp4">
       Ваш браузер не поддерживает видео.
     </video>
-  </main>
+  </div>
+
+  <div class="side-banner"></div>
 
   <script>
     const playBtn = document.getElementById('playBtn');
@@ -117,6 +105,5 @@
       video.play();
     });
   </script>
-
 </body>
 </html>
