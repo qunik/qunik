@@ -2,11 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-<<<<<<< HEAD
-  <title>Qunik.com — Видео по нажатию</title>
-=======
   <title>Видео по нажатию</title>
->>>>>>> c03add1 (Обновление структуры: добавлен header, видео и логотип)
   <style>
     * {
       box-sizing: border-box;
@@ -15,30 +11,11 @@
     body {
       margin: 0;
       padding: 0;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
       font-family: sans-serif;
-    }
-
-    .side-banner {
-      width: 10vw;
-      background-image: url('images/banner.jpg'); /* замени на свой путь */
-      background-size: cover;
-      background-position: center;
-    }
-
-    .content {
-      flex-grow: 1;
+      background-color: #f0f0f0;
       display: flex;
       flex-direction: column;
-<<<<<<< HEAD
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
-=======
       height: 100vh;
->>>>>>> c03add1 (Обновление структуры: добавлен header, видео и логотип)
     }
 
     header {
@@ -51,25 +28,15 @@
 
     header img {
       height: 50px;
-<<<<<<< HEAD
-      margin-right: 15px;
-    }
-
-    header h1 {
-      font-size: 2em;
-=======
       margin-right: 20px;
     }
 
     header h1 {
       font-size: 2rem;
->>>>>>> c03add1 (Обновление структуры: добавлен header, видео и логотип)
       color: black;
       margin: 0;
     }
 
-<<<<<<< HEAD
-=======
     .content {
       flex: 1;
       display: flex;
@@ -96,7 +63,6 @@
       padding: 20px;
     }
 
->>>>>>> c03add1 (Обновление структуры: добавлен header, видео и логотип)
     #playBtn {
       width: 50vw;
       height: 50vh;
@@ -122,24 +88,7 @@
   </style>
 </head>
 <body>
-  <div class="side-banner"></div>
 
-<<<<<<< HEAD
-  <div class="content">
-    <header>
-      <img src="images/logo.PNG" alt="Логотип"> <!-- Замени на свою картинку -->
-      <h1>Qunik.com</h1>
-    </header>
-
-    <button id="playBtn">Смотреть видео</button>
-    <video id="myVideo" controls style="display: none;">
-      <source src="videos/myvideo.MP4" type="video/mp4">
-      Ваш браузер не поддерживает видео.
-    </video>
-  </div>
-
-  <div class="side-banner"></div>
-=======
   <header>
     <img src="images/logo.PNG" alt="Логотип">
     <h1>Qunik.com</h1>
@@ -162,7 +111,6 @@
       <img src="images/banner.jpg" alt="Реклама справа">
     </div>
   </div>
->>>>>>> c03add1 (Обновление структуры: добавлен header, видео и логотип)
 
   <script>
     const playBtn = document.getElementById('playBtn');
@@ -174,5 +122,6 @@
       video.play();
     });
   </script>
+
 </body>
 </html>
