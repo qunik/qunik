@@ -13,23 +13,27 @@
       padding:10px 20px;background:#fff;
       box-shadow:0 2px 5px rgba(0,0,0,.1)
     }
-    header img.logo{
-      height:48px;cursor:pointer;
-      border-radius:8px; /* просто чтобы выглядело аккуратно */
-    }
-    header h1{font-size:2rem;font-weight:700}
+    header img.logo{height:48px;border-radius:8px}
+    header h1{font-size:2rem;font-weight:700;margin-right:auto}
 
-    /* ---------- компоновка основного блока ---------- */
+    /* Картинка‑переключатель */
+    img.switch{
+      height:40px;cursor:pointer;border-radius:8px;
+      transition:transform .2s
+    }
+    img.switch:hover{transform:scale(1.05)}
+
+    /* ---------- layout ---------- */
     .content{flex:1;display:flex;height:calc(100vh - 70px)}
     .side{width:120px}
     .side img{width:100%;height:100%;object-fit:cover}
     .main{
       flex:1;display:flex;flex-direction:column;
-      justify-content:center;align-items:center;gap:20px;
+      align-items:center;justify-content:center;gap:20px;
       background:#f0f0f0
     }
 
-    /* ---------- кнопка ---------- */
+    /* ---------- кнопка просмотра ---------- */
     #playBtn{
       width:50vw;height:45vh;max-height:350px;
       background:#4caf50;color:#fff;font-size:clamp(18px,3vw,32px);
@@ -38,7 +42,6 @@
     }
     #playBtn:hover{background:#45a049;transform:scale(1.02)}
 
-    /* ---------- видео ---------- */
     video{max-width:90vw;max-height:60vh;display:none;border-radius:12px}
 
     @media(max-width:768px){
@@ -49,14 +52,17 @@
   </style>
 </head>
 <body>
-  <!-- ── HEADER ─────────────────────────────────────── -->
+
+  <!-- ── HEADER ────────────────────────────── -->
   <header>
-    <!-- картинка‑логотип; замените src на нужное изображение -->
-    <img src="images/logo.png" alt="logo" class="logo" id="logoToggle">
+    <img src="images/logo.png" class="logo" alt="Логотип">
     <h1>Qunik.com</h1>
+
+    <!-- картинка‑кнопка для переключения версий -->
+    <img src="images/switch.png" class="switch" id="switchBtn" alt="Переключить версию">
   </header>
 
-  <!-- ── ОСНОВНОЙ КОНТЕНТ ───────────────────────────── -->
+  <!-- ── MAIN AREA ─────────────────────────── -->
   <div class="content">
     <div class="side"><img id="leftBanner"  src="images/banner1.jpg"  alt="banner"></div>
 
@@ -71,40 +77,39 @@
     <div class="side"><img id="rightBanner" src="images/banner1.jpg"  alt="banner"></div>
   </div>
 
-  <!-- ── СКРИПТ ПЕРЕКЛЮЧЕНИЯ ───────────────────────── -->
+  <!-- ── SCRIPT ────────────────────────────── -->
   <script>
     const playBtn      = document.getElementById('playBtn');
     const video        = document.getElementById('myVideo');
     const videoSrcTag  = document.getElementById('videoSource');
-    const logo         = document.getElementById('logoToggle');
+    const switchBtn    = document.getElementById('switchBtn');
     const leftBanner   = document.getElementById('leftBanner');
     const rightBanner  = document.getElementById('rightBanner');
 
-    /* файлы для двух режимов */
-    const data = [
-      { video:'videos/myvideo1.mp4', banner:'images/banner1.jpg' },  // режим 0
-      { video:'videos/myvideo2.mp4', banner:'images/banner2.jpg' }   // режим 1
+    /* два набора файлов */
+    const set = [
+      { video:'videos/myvideo1.mp4', banner:'images/banner1.jpg' }, // версия 0
+      { video:'videos/myvideo2.mp4', banner:'images/banner2.jpg' }  // версия 1
     ];
-    let mode = 0;   // текущий режим (0 – обычный)
+    let mode = 0;          // текущая версия
 
-    /* показать видео после нажатия кнопки */
+    /* показать видео по кнопке */
     playBtn.addEventListener('click', ()=>{
       playBtn.style.display='none';
       video.style.display='block';
       video.play();
     });
 
-    /* переключение при клике на логотип */
-    logo.addEventListener('click', ()=>{
-      mode = mode===0 ? 1 : 0;                  // 0→1→0→1 ...
-      /* меняем файлы */
-      leftBanner.src  = data[mode].banner;
-      rightBanner.src = data[mode].banner;
+    /* переключатель‑картинка */
+    switchBtn.addEventListener('click', ()=>{
+      mode = mode ? 0 : 1;                         // 0⇄1
+      leftBanner.src  = set[mode].banner;
+      rightBanner.src = set[mode].banner;
       video.pause();
       video.style.display='none';
       playBtn.style.display='block';
-      videoSrcTag.src = data[mode].video;
-      video.load();                             // пересчитываем video элемент
+      videoSrcTag.src = set[mode].video;
+      video.load();
     });
   </script>
 </body>
