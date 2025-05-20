@@ -1,110 +1,562 @@
-<!-- ... Весь остальной код без изменений ... -->
-
-<script>
-  // ... остальной код без изменений ...
-
-  // Размеры моделей (кактус меньше)
-  const dinoWidth = 80;
-  const dinoHeight = 80;
-  const cactusWidth = 48;  // было 60, стало меньше на 20%
-  const cactusHeight = 64; // было 80, стало меньше на 20%
-
-  // Задержка перед первым кактусом
-  const firstCactusDelay = 1000; // 1 секунда
-
-  // Кнопка "Играть снова"
-  const playAgainBtn = document.createElement('button');
-  playAgainBtn.textContent = '🎮 Играть снова';
-  playAgainBtn.style.position = 'absolute';
-  playAgainBtn.style.top = '60%';
-  playAgainBtn.style.left = '50%';
-  playAgainBtn.style.transform = 'translate(-50%, -50%)';
-  playAgainBtn.style.padding = '12px 24px';
-  playAgainBtn.style.fontSize = '24px';
-  playAgainBtn.style.borderRadius = '12px';
-  playAgainBtn.style.border = 'none';
-  playAgainBtn.style.background = '#4caf50';
-  playAgainBtn.style.color = '#fff';
-  playAgainBtn.style.cursor = 'pointer';
-  playAgainBtn.style.display = 'none';
-  playAgainBtn.style.zIndex = '10000';
-  playAgainBtn.style.boxShadow = '0 0 15px #4caf50';
-
-  gameContainer.appendChild(playAgainBtn);
-
-  playAgainBtn.addEventListener('click', () => {
-    playAgainBtn.style.display = 'none';
-    resetGame();
-    gameRunning = true;
-    firstCactusTimeout = null;
-    requestAnimationFrame(gameLoop);
-  });
-
-  function gameLoop(timestamp) {
-    if (!lastTimestamp) lastTimestamp = timestamp;
-    const deltaTime = timestamp - lastTimestamp;
-    lastTimestamp = timestamp;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Обновляем счет
-    score += deltaTime * 0.01;
-    scoreDiv.textContent = Math.floor(score);
-
-    // Игрок прыгает
-    velocityY += gravity;
-    dinoY += velocityY;
-    if (dinoY > canvas.height - dinoHeight - 20) {
-      dinoY = canvas.height - dinoHeight - 20;
-      isJumping = false;
-      velocityY = 0;
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Qunik.com</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      cursor: url('images/my-cursor.png'), auto;
     }
-    ctx.drawImage(dinoImg, dinoX, dinoY, dinoWidth, dinoHeight);
-
-    // Таймер появления кактусов
-    cactusTimer += deltaTime;
-
-    if (cactuses.length === 0 && !firstCactusTimeout) {
-      firstCactusTimeout = setTimeout(() => {
-        cactuses.push({ x: canvas.width, y: canvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
-        cactusTimer = 0;
-      }, firstCactusDelay);
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #a8d8ff 0%, #fdfcfb 60%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+      position: relative;
     }
-
-    if (cactusTimer > 1500 && cactuses.length > 0) {
-      cactuses.push({ x: canvas.width, y: canvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
-      cactusTimer = 0;
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1%, transparent 1%) center/20px 20px repeat;
+      animation: bubbles 20s linear infinite;
     }
-
-    // Движение и отрисовка препятствий
-    for (let i = 0; i < cactuses.length; i++) {
-      let c = cactuses[i];
-      c.x -= speed;
-      ctx.drawImage(cactusImg, c.x, c.y, c.width, c.height);
-
-      // Столкновение
-      if (
-        dinoX < c.x + c.width &&
-        dinoX + dinoWidth > c.x &&
-        dinoY < c.y + c.height &&
-        dinoY + dinoHeight > c.y
-      ) {
-        gameRunning = false;
-        playAgainBtn.style.display = 'block';
-        alert('Игра окончена! Ваш счет: ' + Math.floor(score));
-        // Не сбрасываем игру сразу, ждем нажатия кнопки "Играть снова"
-        return;
+    @keyframes bubbles {
+      0% { background-position: center bottom; }
+      100% { background-position: center top; }
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px 20px;
+      background: #e0e0e0cc;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+      z-index: 10001;
+      position: relative;
+    }
+    header img.logo {
+      height: 48px;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    header img.logo:hover {
+      transform: rotate(-5deg) scale(1.05);
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-right: auto;
+    }
+    img.switch {
+      height: 45px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: transform .2s;
+      z-index: 10002;
+    }
+    img.switch:hover {
+      transform: scale(1.07) rotate(2deg);
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 70px);
+    }
+    .side {
+      width: 140px;
+    }
+    .side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+    .side img:hover {
+      transform: scale(1.05);
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+    #playBtn {
+      width: 50vw;
+      height: 45vh;
+      max-height: 350px;
+      background: #4caf50;
+      color: #fff;
+      font-size: clamp(18px, 3vw, 32px);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #4caf50;
+      transition: .3s;
+    }
+    #playBtn:hover {
+      background: #45a049;
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #4caf50;
+    }
+    video {
+      max-width: 90vw;
+      max-height: 60vh;
+      display: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
+    }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 10000;
+    }
+    .controls button {
+      padding: 16px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 8px #fff;
+    }
+    #themeToggle {
+      background: #444;
+      color: #fff;
+    }
+    #musicToggle {
+      background: #fff;
+      color: #000;
+    }
+    #themeToggle:hover, #musicToggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 14px #aaa;
+    }
+    @media(max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+      .side {
+        width: 100%;
+        height: 120px;
+      }
+      #playBtn {
+        width: 80vw;
+        height: 160px;
+      }
+      .controls {
+        flex-direction: column;
+        right: 10px;
       }
     }
-
-    cactuses = cactuses.filter(c => c.x + c.width > 0);
-
-    speed += 0.0005;
-
-    if (gameRunning) {
-      requestAnimationFrame(gameLoop);
+    /* Модальное окно */
+    .modal-overlay {
+      position: fixed;
+      z-index: 9999;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 90%;
+    }
+    .modal h2 {
+      margin-bottom: 20px;
+    }
+    .modal button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    .modal .yes { background-color: green; color: white; }
+    .modal .no { background-color: red; color: white; }
+
+    /* Игра - стили */
+    #gameContainer {
+      display: none;
+      position: relative;
+      height: calc(100vh - 70px);
+      background: #f0f0f0;
+      overflow: hidden;
+      flex: 1;
+      z-index: 10000;
+    }
+    #scoreDiv {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #333;
+      user-select: none;
+      z-index: 10010;
+    }
+    #scoreDiv img {
+      width: 32px;
+      height: 32px;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    #playAgainBtn {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 12px 24px;
+      font-size: 24px;
+      border-radius: 12px;
+      border: none;
+      background: #4caf50;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 15px #4caf50;
+      display: none;
+      z-index: 10020;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── MODAL ───────────────────── -->
+<div class="modal-overlay" id="entryModal">
+  <div class="modal">
+    <h2>Этот сайт может содержать фото/видео сексуального характера.<br>Вы уверены, что хотите продолжить?</h2>
+    <button class="yes" onclick="proceedSite()">Да</button>
+    <button class="no" onclick="window.location.href='https://google.com'">Нет</button>
+  </div>
+</div>
+
+<header>
+  <img src="images/logo.png" class="logo" alt="Логотип" id="logo">
+  <h1>Qunik.com</h1>
+  <img src="images/switch.png" class="switch" id="switchBtn" alt="Переключить версию">
+</header>
+
+<div class="content" id="mainContent">
+  <div class="side"><img id="leftBanner" src="images/banner1.jpg" alt="banner"></div>
+  <div class="main">
+    <button id="playBtn">Смотреть видео</button>
+    <video id="myVideo" controls>
+      <source id="videoSource" src="videos/myvideo1.mp4" type="video/mp4" />
+      Ваш браузер не поддерживает видео.
+    </video>
+  </div>
+  <div class="side"><img id="rightBanner" src="images/banner1.jpg" alt="banner"></div>
+</div>
+
+<div id="gameContainer">
+  <div id="scoreDiv">
+    <img src="images/score-icon.png" alt="Счет" />
+    <span id="scoreValue">0</span>
+  </div>
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
+  <button id="playAgainBtn">🎮 Играть снова</button>
+</div>
+
+<div class="controls">
+  <button id="themeToggle">Сменить тему</button>
+  <button id="musicToggle">Музыка: выкл.</button>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="audio/background.mp3" type="audio/mpeg" />
+</audio>
+
+<script>
+  // Основные элементы
+  const playBtn = document.getElementById('playBtn');
+  const video = document.getElementById('myVideo');
+  const videoSrcTag = document.getElementById('videoSource');
+  const switchBtn = document.getElementById('switchBtn');
+  const leftBanner = document.getElementById('leftBanner');
+  const rightBanner = document.getElementById('rightBanner');
+  const themeBtn = document.getElementById('themeToggle');
+  const musicBtn = document.getElementById('musicToggle');
+  const music = document.getElementById('bgMusic');
+  const logo = document.getElementById('logo');
+
+  // Игра элементы
+  const gameContainer = document.getElementById('gameContainer');
+  const gameCanvas = document.getElementById('gameCanvas');
+  const ctx = gameCanvas.getContext('2d');
+  const scoreDiv = document.getElementById('scoreValue');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const mainContent = document.getElementById('mainContent');
+
+  // Видеозаписи и баннеры
+  const set = [
+    { video: 'videos/myvideo1.mp4', banner: 'images/banner1.jpg' },
+    { video: 'videos/myvideo2.mp4', banner: 'images/banner2.jpg' }
+  ];
+  let mode = 0;
+
+  // Управление видео
+  playBtn.addEventListener('click', () => {
+    playBtn.style.display = 'none';
+    video.style.display = 'block';
+    video.play();
+  });
+
+  switchBtn.addEventListener('click', () => {
+    mode = mode ? 0 : 1;
+    leftBanner.src = set[mode].banner;
+    rightBanner.src = set[mode].banner;
+    video.pause();
+    video.style.display = 'none';
+    playBtn.style.display = 'block';
+    videoSrcTag.src = set[mode].video;
+    video.load();
+  });
+
+  // Темы и музыка
+  let dark = false;
+  themeBtn.addEventListener('click', () => {
+    dark = !dark;
+    document.body.style.background = dark
+      ? 'linear-gradient(180deg, #000000, #333)'
+      : 'linear-gradient(180deg,#a8d8ff 0%,#fdfcfb 60%)';
+  });
+
+  let playing = false;
+  musicBtn.addEventListener('click', () => {
+    playing = !playing;
+    if (playing) {
+      music.play();
+      musicBtn.textContent = 'Музыка: вкл.';
+    } else {
+      music.pause();
+      musicBtn.textContent = 'Музыка: выкл.';
+    }
+  });
+
+  function proceedSite() {
+    document.getElementById('entryModal').style.display = 'none';
   }
 
-  // ... остальной код без изменений ...
+  // ----- Игра: Google динозаврик с изменениями -----
+
+  // Параметры игры
+  const dinoImg = new Image();
+  dinoImg.src = 'images/dino.png'; // твой дино
+
+  const cactusImg = new Image();
+  cactusImg.src = 'images/cactus.png'; // твой кактус
+
+  const dinoWidth = 80;
+ 
+
+
+
+
+
+
+ChatGPT сказал:
+const dinoHeight = 80;
+const cactusWidth = 48; // кактус меньше
+const cactusHeight = 64;
+
+let dinoX = 50;
+let dinoY = gameCanvas.height - dinoHeight - 20;
+let velocityY = 0;
+let gravity = 0.6;
+let isJumping = false;
+let speed = 6;
+let cactuses = [];
+let cactusTimer = 0;
+let lastTimestamp = 0;
+let gameRunning = false;
+let score = 0;
+let firstCactusTimeout = null;
+const firstCactusDelay = 1000;
+
+// Сброс игры
+function resetGame() {
+dinoY = gameCanvas.height - dinoHeight - 20;
+velocityY = 0;
+isJumping = false;
+speed = 6;
+cactuses = [];
+cactusTimer = 0;
+lastTimestamp = 0;
+score = 0;
+scoreDiv.textContent = '0';
+firstCactusTimeout = null;
+}
+
+// Отрисовка и логика игры
+function gameLoop(timestamp) {
+if (!lastTimestamp) lastTimestamp = timestamp;
+const deltaTime = timestamp - lastTimestamp;
+lastTimestamp = timestamp;
+
+php
+Копировать
+Редактировать
+ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+// Обновляем счет (в реальном времени)
+score += deltaTime * 0.01;
+scoreDiv.textContent = Math.floor(score);
+
+// Прыжок динозавра
+velocityY += gravity;
+dinoY += velocityY;
+if (dinoY > gameCanvas.height - dinoHeight - 20) {
+  dinoY = gameCanvas.height - dinoHeight - 20;
+  isJumping = false;
+  velocityY = 0;
+}
+ctx.drawImage(dinoImg, dinoX, dinoY, dinoWidth, dinoHeight);
+
+// Таймер и создание кактусов
+cactusTimer += deltaTime;
+
+if (cactuses.length === 0 && !firstCactusTimeout) {
+  firstCactusTimeout = setTimeout(() => {
+    cactuses.push({ x: gameCanvas.width, y: gameCanvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
+    cactusTimer = 0;
+  }, firstCactusDelay);
+}
+
+if (cactusTimer > 1500 && cactuses.length > 0) {
+  cactuses.push({ x: gameCanvas.width, y: gameCanvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
+  cactusTimer = 0;
+}
+
+// Движение и отрисовка кактусов
+for (let i = 0; i < cactuses.length; i++) {
+  let c = cactuses[i];
+  c.x -= speed;
+  ctx.drawImage(cactusImg, c.x, c.y, c.width, c.height);
+
+  // Проверка столкновения
+  if (
+    dinoX < c.x + c.width &&
+    dinoX + dinoWidth > c.x &&
+    dinoY < c.y + c.height &&
+    dinoY + dinoHeight > c.y
+  ) {
+    gameRunning = false;
+    playAgainBtn.style.display = 'block';
+    return;
+  }
+}
+
+cactuses = cactuses.filter(c => c.x + c.width > 0);
+
+speed += 0.0005;
+
+if (gameRunning) {
+  requestAnimationFrame(gameLoop);
+}
+}
+
+// Обработчик прыжка
+window.addEventListener('keydown', (e) => {
+if (e.code === 'Space' || e.code === 'ArrowUp') {
+if (!isJumping && gameRunning) {
+velocityY = -12;
+isJumping = true;
+}
+}
+});
+
+// Кнопка "Играть снова"
+playAgainBtn.addEventListener('click', () => {
+resetGame();
+playAgainBtn.style.display = 'none';
+gameRunning = true;
+requestAnimationFrame(gameLoop);
+});
+
+// Запуск игры — по клику на переключатель в header (switchBtn)
+switchBtn.addEventListener('click', () => {
+// При переключении режима видео — скрываем игру
+stopGame();
+
+csharp
+Копировать
+Редактировать
+// Переключаем видео как обычно
+mode = mode ? 0 : 1;
+leftBanner.src = set[mode].banner;
+rightBanner.src = set[mode].banner;
+video.pause();
+video.style.display = 'none';
+playBtn.style.display = 'block';
+videoSrcTag.src = set[mode].video;
+video.load();
+});
+
+// Новый обработчик для игры при клике на логотип — возврат на основное содержимое сайта
+logo.addEventListener('click', () => {
+stopGame();
+mainContent.style.display = 'flex';
+gameContainer.style.display = 'none';
+});
+
+// Запуск игры по нажатию на кнопку "Играть в игру"
+playBtn.addEventListener('click', () => {
+mainContent.style.display = 'none';
+gameContainer.style.display = 'block';
+resetGame();
+gameRunning = true;
+playAgainBtn.style.display = 'none';
+requestAnimationFrame(gameLoop);
+});
+
+function stopGame() {
+gameRunning = false;
+playAgainBtn.style.display = 'none';
+}
+
+// Открытие сайта после подтверждения модального окна
+window.addEventListener('load', () => {
+if (document.getElementById('entryModal').style.display !== 'none') {
+// сайт заморожен до выбора пользователя
+mainContent.style.display = 'none';
+gameContainer.style.display = 'none';
+} else {
+mainContent.style.display = 'flex';
+}
+});
 </script>
+
+</body> </html> ```
