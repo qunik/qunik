@@ -5,73 +5,167 @@
   <title>Qunik.com</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
-
-    body {
-      min-height:100vh;display:flex;flex-direction:column;
-      background:linear-gradient(180deg,#a8d8ff 0%,#fdfcfb 60%);
-      transition:background 0.3s,color 0.3s;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
     }
 
-    body.dark {
-      background:linear-gradient(180deg,#222,#444);
-      color:white;
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #a8d8ff 0%, #fdfcfb 60%);
+      background-attachment: fixed;
+      overflow-x: hidden;
     }
 
     header {
-      display:flex;align-items:center;gap:15px;
-      padding:10px 20px;
-      background:#e0e0e0cc;
-      backdrop-filter:blur(6px);
-      box-shadow:0 2px 8px rgba(0,0,0,.15);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px 20px;
+      background: #e0e0e0cc;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
     }
 
-    body.dark header {
-      background:#333c;
+    header img.logo {
+      height: 48px;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
     }
 
-    header img.logo { height:48px;border-radius:8px }
-    header h1 { font-size:2rem;font-weight:700;margin-right:auto }
-
-    img.switch, button.themeBtn, button.musicBtn {
-      height:40px;cursor:pointer;border-radius:8px;
-      transition:transform .2s;background:none;border:none
+    header img.logo:hover {
+      transform: rotate(-5deg) scale(1.05);
     }
 
-    img.switch:hover,
-    button.themeBtn:hover,
-    button.musicBtn:hover {
-      transform:scale(1.07)
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-right: auto;
     }
 
-    .content { flex:1;display:flex;height:calc(100vh - 70px) }
-    .side { width:120px }
-    .side img { width:100%;height:100%;object-fit:cover;border-radius:10px }
+    img.switch {
+      height: 45px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: transform .2s;
+    }
+
+    img.switch:hover {
+      transform: scale(1.07) rotate(2deg);
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 70px);
+    }
+
+    .side {
+      width: 140px;
+    }
+
+    .side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+
+    .side img:hover {
+      transform: scale(1.05);
+    }
 
     .main {
-      flex:1;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;gap:20px;
-      padding:20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
     }
 
     #playBtn {
-      width:50vw;height:45vh;max-height:350px;
-      background:#4caf50;color:#fff;font-size:clamp(18px,3vw,32px);
-      border:none;border-radius:25px;cursor:pointer;
-      box-shadow:0 8px 20px rgba(0,0,0,.2);
-      transition:.3s
+      width: 50vw;
+      height: 45vh;
+      max-height: 350px;
+      background: #4caf50;
+      color: #fff;
+      font-size: clamp(18px, 3vw, 32px);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .2);
+      transition: .3s;
     }
-    #playBtn:hover { background:#45a049;transform:scale(1.03) }
+
+    #playBtn:hover {
+      background: #45a049;
+      transform: scale(1.05);
+    }
 
     video {
-      max-width:90vw;max-height:60vh;display:none;
-      border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.25)
+      max-width: 90vw;
+      max-height: 60vh;
+      display: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
     }
 
-    @media(max-width:768px){
-      .content{flex-direction:column}
-      .side{width:100%;height:120px}
-      #playBtn{width:80vw;height:160px}
+    /* Кнопки внизу */
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .controls button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #themeToggle {
+      background: #222;
+      color: #fff;
+    }
+
+    #musicToggle {
+      background: #f0f0f0;
+      color: #000;
+    }
+
+    #themeToggle:hover, #musicToggle:hover {
+      transform: scale(1.08);
+    }
+
+    @media(max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+
+      .side {
+        width: 100%;
+        height: 120px;
+      }
+
+      #playBtn {
+        width: 80vw;
+        height: 160px;
+      }
+
+      .controls {
+        flex-direction: column;
+        right: 10px;
+      }
     }
   </style>
 </head>
@@ -81,90 +175,89 @@
   <header>
     <img src="images/logo.png" class="logo" alt="Логотип">
     <h1>Qunik.com</h1>
-
-    <!-- кнопка переключения темы -->
-    <button class="themeBtn" title="Сменить тему">🌓</button>
-
-    <!-- кнопка включения музыки -->
-    <button class="musicBtn" title="Музыка">🎵</button>
-
-    <!-- картинка‑кнопка для переключения версий -->
     <img src="images/switch.png" class="switch" id="switchBtn" alt="Переключить версию">
   </header>
 
-  <!-- ── MAIN AREA ─────────────────────────── -->
+  <!-- ── MAIN ──────────────────────────────── -->
   <div class="content">
-    <div class="side"><img id="leftBanner"  src="images/banner1.jpg"  alt="banner"></div>
+    <div class="side"><img id="leftBanner" src="images/banner1.jpg" alt="banner"></div>
 
     <div class="main">
       <button id="playBtn">Смотреть видео</button>
-      <video  id="myVideo" controls>
+      <video id="myVideo" controls>
         <source id="videoSource" src="videos/myvideo1.mp4" type="video/mp4">
         Ваш браузер не поддерживает видео.
       </video>
     </div>
 
-    <div class="side"><img id="rightBanner" src="images/banner1.jpg"  alt="banner"></div>
+    <div class="side"><img id="rightBanner" src="images/banner1.jpg" alt="banner"></div>
   </div>
 
-  <!-- ── AUDIO ─────────────────────────────── -->
+  <!-- ── CONTROLS ──────────────────────────── -->
+  <div class="controls">
+    <button id="themeToggle">Сменить тему</button>
+    <button id="musicToggle">Музыка: выкл.</button>
+  </div>
+
+  <!-- ── АУДИО ─────────────────────────────── -->
   <audio id="bgMusic" loop>
-    <source src="audio/music.mp3" type="audio/mp3">
+    <source src="music/background.mp3" type="audio/mpeg">
   </audio>
 
   <!-- ── SCRIPT ────────────────────────────── -->
   <script>
-    const playBtn      = document.getElementById('playBtn');
-    const video        = document.getElementById('myVideo');
-    const videoSrcTag  = document.getElementById('videoSource');
-    const switchBtn    = document.getElementById('switchBtn');
-    const leftBanner   = document.getElementById('leftBanner');
-    const rightBanner  = document.getElementById('rightBanner');
-    const themeBtn     = document.querySelector('.themeBtn');
-    const musicBtn     = document.querySelector('.musicBtn');
-    const audio        = document.getElementById('bgMusic');
+    const playBtn = document.getElementById('playBtn');
+    const video = document.getElementById('myVideo');
+    const videoSrcTag = document.getElementById('videoSource');
+    const switchBtn = document.getElementById('switchBtn');
+    const leftBanner = document.getElementById('leftBanner');
+    const rightBanner = document.getElementById('rightBanner');
+    const themeBtn = document.getElementById('themeToggle');
+    const musicBtn = document.getElementById('musicToggle');
+    const music = document.getElementById('bgMusic');
 
     const set = [
-      { video:'videos/myvideo1.mp4', banner:'images/banner1.jpg' },
-      { video:'videos/myvideo2.mp4', banner:'images/banner2.jpg' }
+      { video: 'videos/myvideo1.mp4', banner: 'images/banner1.jpg' },
+      { video: 'videos/myvideo2.mp4', banner: 'images/banner2.jpg' }
     ];
     let mode = 0;
 
-    // Показывать видео
-    playBtn.addEventListener('click', ()=>{
-      playBtn.style.display='none';
-      video.style.display='block';
+    playBtn.addEventListener('click', () => {
+      playBtn.style.display = 'none';
+      video.style.display = 'block';
       video.play();
     });
 
-    // Переключатель версий
-    switchBtn.addEventListener('click', ()=>{
+    switchBtn.addEventListener('click', () => {
       mode = mode ? 0 : 1;
-      leftBanner.src  = set[mode].banner;
+      leftBanner.src = set[mode].banner;
       rightBanner.src = set[mode].banner;
       video.pause();
-      video.style.display='none';
-      playBtn.style.display='block';
+      video.style.display = 'none';
+      playBtn.style.display = 'block';
       videoSrcTag.src = set[mode].video;
       video.load();
     });
 
-    // Переключатель темы
+    // Тема
+    let dark = false;
     themeBtn.addEventListener('click', () => {
-      document.body.classList.toggle('dark');
+      dark = !dark;
+      document.body.style.background = dark
+        ? 'linear-gradient(180deg, #000000, #333)'
+        : 'linear-gradient(180deg,#a8d8ff 0%,#fdfcfb 60%)';
     });
 
     // Музыка
-    let isPlaying = false;
+    let playing = false;
     musicBtn.addEventListener('click', () => {
-      if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-        musicBtn.textContent = '🎵';
+      playing = !playing;
+      if (playing) {
+        music.play();
+        musicBtn.textContent = 'Музыка: вкл.';
       } else {
-        audio.play();
-        isPlaying = true;
-        musicBtn.textContent = '🔇';
+        music.pause();
+        musicBtn.textContent = 'Музыка: выкл.';
       }
     });
   </script>
