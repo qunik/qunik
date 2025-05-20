@@ -1,122 +1,126 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Qunik.com</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f2f2f2;
+    *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
+
+    /* ---------- header ---------- */
+    header{
+      display:flex;align-items:center;gap:15px;
+      padding:10px 20px;
+      background:#e0e0e0cc;                     /* серый + лёгкая прозрачность */
+      backdrop-filter:blur(6px);               /* эффект стекла */
+      box-shadow:0 2px 8px rgba(0,0,0,.15);
     }
-    header {
-      background: #e0e0e0;
-      display: flex;
-      align-items: center;
-      padding: 10px 20px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    header img.logo{height:48px;border-radius:8px}
+    header h1{font-size:2rem;font-weight:700;margin-right:auto}
+
+    /* картинка‑переключатель */
+    img.switch{
+      height:40px;cursor:pointer;border-radius:8px;
+      transition:transform .2s
     }
-    header img.logo {
-      height: 50px;
-      margin-right: 15px;
-      border-radius: 8px;
+    img.switch:hover{transform:scale(1.07)}
+
+    /* ---------- фон страницы ---------- */
+    body{
+      min-height:100vh;display:flex;flex-direction:column;
+      /* нежный градиент неба: сверху голубой, снизу светло‑бежевый */
+      background:linear-gradient(180deg,#a8d8ff 0%,#fdfcfb 60%);
     }
-    header h1 {
-      font-size: 24px;
-      color: #333;
+
+    /* ---------- layout ---------- */
+    .content{flex:1;display:flex;height:calc(100vh - 70px)}
+    .side{width:120px}
+    .side img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+    .main{
+      flex:1;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:20px;
+      padding:20px;
     }
-    .video-block {
-      margin: 20px auto;
-      padding: 20px;
-      background: white;
-      width: 90%;
-      max-width: 700px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    /* ---------- кнопка просмотра ---------- */
+    #playBtn{
+      width:50vw;height:45vh;max-height:350px;
+      background:#4caf50;color:#fff;font-size:clamp(18px,3vw,32px);
+      border:none;border-radius:25px;cursor:pointer;
+      box-shadow:0 8px 20px rgba(0,0,0,.2);
+      transition:.3s
     }
-    video {
-      width: 100%;
-      border-radius: 8px;
-    }
-    .likes {
-      margin-top: 10px;
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-    .likes button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #ddd;
+    #playBtn:hover{background:#45a049;transform:scale(1.03)}
+
+    video{max-width:90vw;max-height:60vh;display:none;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.25)}
+
+    @media(max-width:768px){
+      .content{flex-direction:column}
+      .side{width:100%;height:120px}
+      #playBtn{width:80vw;height:160px}
     }
   </style>
 </head>
 <body>
 
+  <!-- ── HEADER ────────────────────────────── -->
   <header>
-    <img src="images/logo.png" alt="Логотип" class="logo" />
+    <img src="images/logo.png" class="logo" alt="Логотип">
     <h1>Qunik.com</h1>
+
+    <!-- картинка‑кнопка для переключения версий -->
+    <img src="images/switch.png" class="switch" id="switchBtn" alt="Переключить версию">
   </header>
 
-  <div class="video-block">
-    <video controls src="videos/myvideo1.mp4"></video>
-    <div class="likes">
-      <button onclick="vote('video1', 'like')">👍 <span id="video1-like">0</span></button>
-      <button onclick="vote('video1', 'dislike')">👎 <span id="video1-dislike">0</span></button>
+  <!-- ── MAIN AREA ─────────────────────────── -->
+  <div class="content">
+    <div class="side"><img id="leftBanner"  src="images/banner1.jpg"  alt="banner"></div>
+
+    <div class="main">
+      <button id="playBtn">Смотреть видео</button>
+      <video  id="myVideo" controls>
+        <source id="videoSource" src="videos/myvideo1.mp4" type="video/mp4">
+        Ваш браузер не поддерживает видео.
+      </video>
     </div>
+
+    <div class="side"><img id="rightBanner" src="images/banner1.jpg"  alt="banner"></div>
   </div>
 
-  <div class="video-block">
-    <video controls src="videos/myvideo2.mp4"></video>
-    <div class="likes">
-      <button onclick="vote('video2', 'like')">👍 <span id="video2-like">0</span></button>
-      <button onclick="vote('video2', 'dislike')">👎 <span id="video2-dislike">0</span></button>
-    </div>
-  </div>
+  <!-- ── SCRIPT ────────────────────────────── -->
+  <script>
+    const playBtn      = document.getElementById('playBtn');
+    const video        = document.getElementById('myVideo');
+    const videoSrcTag  = document.getElementById('videoSource');
+    const switchBtn    = document.getElementById('switchBtn');
+    const leftBanner   = document.getElementById('leftBanner');
+    const rightBanner  = document.getElementById('rightBanner');
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    /* два набора файлов */
+    const set = [
+      { video:'videos/myvideo1.mp4', banner:'images/banner1.jpg' }, // версия 0
+      { video:'videos/myvideo2.mp4', banner:'images/banner2.jpg' }  // версия 1
+    ];
+    let mode = 0;          // текущая версия
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBgjyZWbMd60J8lm0owvXXpBD11SL26iVo",
-      authDomain: "qunik-likes.firebaseapp.com",
-      projectId: "qunik-likes",
-      storageBucket: "qunik-likes.firebasestorage.app",
-      messagingSenderId: "473638303626",
-      appId: "1:473638303626:web:5470f574cdaa5056de7a73"
-    };
+    /* показать видео по кнопке */
+    playBtn.addEventListener('click', ()=>{
+      playBtn.style.display='none';
+      video.style.display='block';
+      video.play();
+    });
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const videos = ['video1', 'video2'];
-
-    async function loadVotes() {
-      for (const id of videos) {
-        const ref = doc(db, "votes", id);
-        const snap = await getDoc(ref);
-        const data = snap.exists() ? snap.data() : { like: 0, dislike: 0 };
-        document.getElementById(`${id}-like`).textContent = data.like;
-        document.getElementById(`${id}-dislike`).textContent = data.dislike;
-      }
-    }
-
-    async function vote(videoId, type) {
-      const ref = doc(db, "votes", videoId);
-      await setDoc(ref, { like: 0, dislike: 0 }, { merge: true });
-      await updateDoc(ref, {
-        [type]: increment(1)
-      });
-      loadVotes();
-    }
-
-    loadVotes();
+    /* переключатель‑картинка */
+    switchBtn.addEventListener('click', ()=>{
+      mode = mode ? 0 : 1;                         // 0⇄1
+      leftBanner.src  = set[mode].banner;
+      rightBanner.src = set[mode].banner;
+      video.pause();
+      video.style.display='none';
+      playBtn.style.display='block';
+      videoSrcTag.src = set[mode].video;
+      video.load();
+    });
   </script>
-
 </body>
 </html>
