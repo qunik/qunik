@@ -5,6 +5,7 @@
   <title>Qunik.com</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    /* Общие стили */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -24,10 +25,8 @@
     body::before {
       content: '';
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       z-index: -1;
       background: radial-gradient(circle, rgba(255,255,255,0.1) 1%, transparent 1%) center/20px 20px repeat;
       animation: bubbles 20s linear infinite;
@@ -46,8 +45,8 @@
       background: #e0e0e0cc;
       backdrop-filter: blur(6px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
-      z-index: 10;
       position: relative;
+      z-index: 10;
     }
 
     header img.logo {
@@ -76,17 +75,6 @@
 
     img.switch:hover {
       transform: scale(1.07) rotate(2deg);
-    }
-
-    /* Кнопка для игры */
-    img#gameBtn {
-      height: 45px;
-      cursor: pointer;
-      border-radius: 10px;
-      transition: transform .2s;
-    }
-    img#gameBtn:hover {
-      transform: scale(1.07) rotate(-3deg);
     }
 
     .content {
@@ -155,7 +143,6 @@
       right: 20px;
       display: flex;
       gap: 15px;
-      z-index: 10;
     }
 
     .controls button {
@@ -241,17 +228,25 @@
     .modal .yes { background-color: green; color: white; }
     .modal .no { background-color: red; color: white; }
 
-    /* Стили для canvas игры */
-    #gameCanvas {
+    /* Стили для игры */
+    #gameContainer {
       display: none;
-      background: #f0f0f0;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-      margin: 20px auto;
-      display: block;
+      position: relative;
+      height: calc(100vh - 70px);
+      width: 100%;
+      background: #f7f7f7;
+      overflow: hidden;
+      user-select: none;
     }
 
-    /* Счет */
+    canvas {
+      background: #f0f0f0;
+      display: block;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
     #scoreContainer {
       position: absolute;
       top: 10px;
@@ -265,16 +260,11 @@
       user-select: none;
     }
 
-    #scoreIcon {
-      width: 36px;
-      height: 36px;
-      user-select: none;
+    #scoreImg {
+      height: 40px; /* размер картинки рядом с счетом */
+      width: 40px;
     }
 
-    /* Чтобы при игре не скролилось */
-    body.game-active {
-      overflow: hidden;
-    }
   </style>
 </head>
 <body>
@@ -289,11 +279,11 @@
 </div>
 
 <header>
-  <img src="images/logo.png" class="logo" alt="Логотип" id="logo" />
+  <img src="images/logo.png" class="logo" alt="Логотип" id="logoBtn" />
   <h1>Qunik.com</h1>
   <img src="images/switch.png" class="switch" id="switchBtn" alt="Переключить версию" />
-  <!-- Кнопка для запуска игры -->
-  <img src="images/game-button.png" class="switch" id="gameBtn" alt="Играть" title="Играть в игру" />
+  <!-- Кнопка запуска игры -->
+  <img src="images/game-icon.png" class="switch" id="gameBtn" alt="Запустить игру" title="Запустить игру" style="margin-left: 10px;" />
 </header>
 
 <div class="content" id="mainContent">
@@ -308,6 +298,15 @@
   <div class="side"><img id="rightBanner" src="images/banner1.jpg" alt="banner" /></div>
 </div>
 
+<!-- Контейнер игры -->
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
+  <div id="scoreContainer">
+    <img id="scoreImg" src="images/score-icon.png" alt="Счет" />
+    <div id="score">0</div>
+  </div>
+</div>
+
 <div class="controls">
   <button id="themeToggle">Сменить тему</button>
   <button id="musicToggle">Музыка: выкл.</button>
@@ -317,21 +316,8 @@
   <source src="audio/background.mp3" type="audio/mpeg" />
 </audio>
 
-<!-- CANVAS для игры -->
-<canvas id="gameCanvas" width="800" height="200"></canvas>
-
-<!-- Счет -->
-<div id="scoreContainer" style="display:none;">
-  <img src="images/score-icon.png" id="scoreIcon" alt="Score Icon" />
-  <div id="score">0</div>
-</div>
-
 <script>
-  // Работа модального окна
-  function proceedSite() {
-    document.getElementById('entryModal').style.display = 'none';
-  }
-
+  // Основные элементы
   const playBtn = document.getElementById('playBtn');
   const video = document.getElementById('myVideo');
   const videoSrcTag = document.getElementById('videoSource');
@@ -341,13 +327,11 @@
   const themeBtn = document.getElementById('themeToggle');
   const musicBtn = document.getElementById('musicToggle');
   const music = document.getElementById('bgMusic');
-
-  const gameBtn = document.getElementById('gameBtn');
-  const logo = document.getElementById('logo');
   const mainContent = document.getElementById('mainContent');
-  const gameCanvas = document.getElementById('gameCanvas');
-  const scoreContainer = document.getElementById('scoreContainer');
-  const scoreDisplay = document.getElementById('score');
+  const gameContainer = document.getElementById('gameContainer');
+  const gameBtn = document.getElementById('gameBtn');
+  const logoBtn = document.getElementById('logoBtn');
+  const scoreDiv = document.getElementById('score');
 
   const set = [
     { video: 'videos/myvideo1.mp4', banner: 'images/banner1.jpg' },
@@ -380,10 +364,10 @@
       : 'linear-gradient(180deg,#a8d8ff 0%,#fdfcfb 60%)';
   });
 
-  let playing = false;
+  let playingMusic = false;
   musicBtn.addEventListener('click', () => {
-    playing = !playing;
-    if (playing) {
+    playingMusic = !playingMusic;
+    if (playingMusic) {
       music.play();
       musicBtn.textContent = 'Музыка: вкл.';
     } else {
@@ -392,150 +376,178 @@
     }
   });
 
-  // --- Логика игры ---
+  function proceedSite() {
+    document.getElementById('entryModal').style.display = 'none';
+  }
 
-  let gameActive = false;
-  let ctx = gameCanvas.getContext('2d');
+  // ---- ИГРА ----
 
-  // Загрузка картинок для игры
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Замените пути на свои картинки
   const dinoImg = new Image();
-  dinoImg.src = 'images/game-dino.png';  // <-- сюда свою картинку персонажа
+  dinoImg.src = 'images/dino.png'; // ваша картинка игрока
 
   const cactusImg = new Image();
-  cactusImg.src = 'images/game-cactus.png'; // <-- сюда свою картинку врага
+  cactusImg.src = 'images/cactus.png'; // ваша картинка препятствия
 
-  // Параметры персонажа
-  const dino = {
-    x: 50,
-    y: 0,
-    width: 44,
-    height: 47,
-    yBase: 150,
-    velocityY: 0,
-    gravity: 1.5,
-    jumpForce: 22,
-    jumping: false
-  };
+  // Размеры моделей (больше чем стандартный динозаврик)
+  const dinoWidth = 80;
+  const dinoHeight = 80;
+  const cactusWidth = 60;
+  const cactusHeight = 80;
 
-  // Параметры врага
-  let cactus = {
-    x: gameCanvas.width,
-    y: 150,
-    width: 25,
-    height: 50,
-    speed: 8
-  };
+  let gameRunning = false;
+  let dinoY = canvas.height - dinoHeight - 20; // позиция игрока по Y (стоячий на земле)
+  let dinoX = 50; // фиксированная позиция игрока по X
+
+  let velocityY = 0;
+  const gravity = 1.2;
+  let isJumping = false;
+
+  // Препятствия
+  let cactuses = [];
+
+  // Скорость движения препятствий
+  let speed = 6;
 
   // Счет
   let score = 0;
 
-  function resetGame() {
-    dino.y = dino.yBase;
-    dino.velocityY = 0;
-    dino.jumping = false;
-    cactus.x = gameCanvas.width;
-    score = 0;
-  }
+  // Время появления первого кактуса после старта
+  const firstCactusDelay = 3000; // 3 секунды
 
-  function draw() {
-    // Очистка
-    ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+  // Таймеры и обработчики
+  let lastTimestamp = 0;
+  let cactusTimer = 0;
+  let firstCactusTimeout;
 
-    // Рисуем землю (линия)
-    ctx.strokeStyle = "#444";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, dino.yBase + dino.height);
-    ctx.lineTo(gameCanvas.width, dino.yBase + dino.height);
-    ctx.stroke();
-
-    // Рисуем персонажа
-    ctx.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
-
-    // Рисуем врага
-    ctx.drawImage(cactusImg, cactus.x, cactus.y, cactus.width, cactus.height);
-  }
-
-  function update() {
-    if (!gameActive) return;
-
-    // Прыжок + гравитация
-    if (dino.jumping) {
-      dino.velocityY -= dino.gravity;
-      dino.y -= dino.velocityY;
-
-      if (dino.y >= dino.yBase) {
-        dino.y = dino.yBase;
-        dino.jumping = false;
-        dino.velocityY = 0;
-      }
-    }
-
-    // Движение врага
-    cactus.x -= cactus.speed;
-    if (cactus.x + cactus.width < 0) {
-      cactus.x = gameCanvas.width + Math.random() * 200;
-      score++;
-      scoreDisplay.textContent = score;
-    }
-
-    // Проверка столкновения (простая AABB)
-    if (
-      dino.x < cactus.x + cactus.width &&
-      dino.x + dino.width > cactus.x &&
-      dino.y + dino.height > cactus.y
-    ) {
-      // Конец игры
-      alert('Игра окончена! Ваш счет: ' + score);
-      resetGame();
-    }
-  }
-
-  function gameLoop() {
-    if (!gameActive) return;
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-  }
-
-  // Обработчик прыжка (пробел или стрелка вверх)
+  // Управление прыжком
   function jump() {
-    if (!dino.jumping) {
-      dino.jumping = true;
-      dino.velocityY = dino.jumpForce;
+    if (!isJumping) {
+      velocityY = -18;
+      isJumping = true;
     }
   }
 
   document.addEventListener('keydown', e => {
-    if (!gameActive) return;
     if (e.code === 'Space' || e.code === 'ArrowUp') {
       e.preventDefault();
       jump();
     }
   });
 
-  // Запуск игры
-  gameBtn.addEventListener('click', () => {
-    gameActive = true;
+  function resetGame() {
+    cactuses = [];
+    score = 0;
+    speed = 6;
+    velocityY = 0;
+    isJumping = false;
+    dinoY = canvas.height - dinoHeight - 20;
+    scoreDiv.textContent = score;
+    lastTimestamp = 0;
+    cactusTimer = 0;
+  }
+
+  function gameLoop(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const deltaTime = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Обновляем счет - увеличиваем каждую секунду
+    score += deltaTime * 0.01; // плавный рост счета
+    scoreDiv.textContent = Math.floor(score);
+
+    // Рисуем игрока
+    // Прыжок
+    velocityY += gravity;
+    dinoY += velocityY;
+    if (dinoY > canvas.height - dinoHeight - 20) {
+      dinoY = canvas.height - dinoHeight - 20;
+      isJumping = false;
+      velocityY = 0;
+    }
+    ctx.drawImage(dinoImg, dinoX, dinoY, dinoWidth, dinoHeight);
+
+    // Обновление и отрисовка кактусов
+    cactusTimer += deltaTime;
+    if (cactusTimer > 1500 && cactuses.length === 0) {
+      // первый кактус появляется через 3 секунды, потом каждые 1.5 секунды
+      if (!firstCactusTimeout) {
+        firstCactusTimeout = setTimeout(() => {
+          cactuses.push({ x: canvas.width, y: canvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
+          cactusTimer = 0;
+        }, firstCactusDelay);
+      }
+    }
+    if (cactusTimer > 1500 && cactuses.length > 0) {
+      cactuses.push({ x: canvas.width, y: canvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
+      cactusTimer = 0;
+    }
+
+    // Движение и отрисовка препятствий
+    for (let i = 0; i < cactuses.length; i++) {
+      let c = cactuses[i];
+      c.x -= speed;
+      ctx.drawImage(cactusImg, c.x, c.y, c.width, c.height);
+
+      // Проверка столкновения
+      if (
+        dinoX < c.x + c.width &&
+        dinoX + dinoWidth > c.x &&
+        dinoY < c.y + c.height &&
+        dinoY + dinoHeight > c.y
+      ) {
+        // Столкновение — конец игры
+        gameRunning = false;
+        alert('Игра окончена! Ваш счет: ' + Math.floor(score));
+        resetGame();
+        showMainContent();
+        return;
+      }
+    }
+
+    // Удаляем препятствия, вышедшие за пределы экрана
+    cactuses = cactuses.filter(c => c.x + c.width > 0);
+
+    // Увеличиваем скорость со временем для сложности
+    speed += 0.0005;
+
+    if (gameRunning) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
+
+  function hideMainContent() {
     mainContent.style.display = 'none';
-    scoreContainer.style.display = 'flex';
-    gameCanvas.style.display = 'block';
-    document.body.classList.add('game-active');
+    gameContainer.style.display = 'block';
+  }
+
+  function showMainContent() {
+    mainContent.style.display = 'flex';
+    gameContainer.style.display = 'none';
+  }
+
+  // Запуск игры по кнопке
+  gameBtn.addEventListener('click', () => {
     resetGame();
-    gameLoop();
+    hideMainContent();
+    gameRunning = true;
+    firstCactusTimeout = null;
+    requestAnimationFrame(gameLoop);
   });
 
-  // Возврат с игры на сайт при клике на логотип
-  logo.addEventListener('click', () => {
-    if (gameActive) {
-      gameActive = false;
-      gameCanvas.style.display = 'none';
-      scoreContainer.style.display = 'none';
-      mainContent.style.display = 'flex';
-      document.body.classList.remove('game-active');
+  // Возврат по клику на логотип
+  logoBtn.addEventListener('click', () => {
+    if (gameRunning) {
+      gameRunning = false;
+      resetGame();
+      showMainContent();
     }
   });
 </script>
-
 </body>
 </html>
