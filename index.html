@@ -362,176 +362,192 @@
     document.body.style.background = dark
       ? 'linear-gradient(180deg, #000000, #333)'
       : 'linear-gradient(180deg,#a8d8ff 0%,#fdfcfb 60%)';
+  });
 
+  let playingMusic = false;
+  musicBtn.addEventListener('click', () => {
+    playingMusic = !playingMusic;
+    if (playingMusic) {
+      music.play();
+      musicBtn.textContent = 'Музыка: вкл.';
+    } else {
+      music.pause();
+      musicBtn.textContent = 'Музыка: выкл.';
+    }
+  });
 
+  function proceedSite() {
+    document.getElementById('entryModal').style.display = 'none';
+  }
 
+  // ---- ИГРА ----
 
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
 
-ChatGPT сказал:
-ini
-Копировать
-Редактировать
-document.body.style.color = dark ? '#ddd' : '#222';
-});
+  // Замените пути на свои картинки
+  const dinoImg = new Image();
+  dinoImg.src = 'images/dino.png'; // ваша картинка игрока
 
-let musicOn = false;
-musicBtn.addEventListener('click', () => {
-musicOn = !musicOn;
-if (musicOn) {
-music.play();
-musicBtn.textContent = 'Музыка: вкл.';
-} else {
-music.pause();
-musicBtn.textContent = 'Музыка: выкл.';
-}
-});
+  const cactusImg = new Image();
+  cactusImg.src = 'images/cactus.png'; // ваша картинка препятствия
 
-// Модальное окно с предупреждением
-function proceedSite() {
-document.getElementById('entryModal').style.display = 'none';
-}
+  // Размеры моделей (больше чем стандартный динозаврик)
+  const dinoWidth = 80;
+  const dinoHeight = 80;
+  const cactusWidth = 40;
+  const cactusHeight = 60;
 
-// --- Игра Динозаврик ---
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  let gameRunning = false;
+  let dinoY = canvas.height - dinoHeight - 20; // позиция игрока по Y (стоячий на земле)
+  let dinoX = 50; // фиксированная позиция игрока по X
 
-let running = false;
-let score = 0;
+  let velocityY = 0;
+  const gravity = 1.2;
+  let isJumping = false;
 
-// Игрок — квадрат
-const dino = {
-x: 50,
-y: canvas.height - 40,
-width: 40,
-height: 40,
-vy: 0,
-gravity: 1.2,
-jumpForce: 18,
-grounded: true,
-update() {
-this.vy += this.gravity;
-this.y += this.vy;
-if (this.y > canvas.height - this.height) {
-this.y = canvas.height - this.height;
-this.vy = 0;
-this.grounded = true;
-}
-},
-draw() {
-ctx.fillStyle = '#006600';
-ctx.fillRect(this.x, this.y, this.width, this.height);
-},
-jump() {
-if (this.grounded) {
-this.vy = -this.jumpForce;
-this.grounded = false;
-}
-}
-};
+  // Препятствия
+  let cactuses = [];
 
-// Кактусы
-let cactuses = [];
+  // Скорость движения препятствий
+  let speed = 6;
 
-// Таймер для появления кактусов
-let cactusTimer = 0;
-let cactusInterval = 90 + Math.random() * 60; // стартовый интервал
+  // Счет
+  let score = 0;
 
-function spawnCactus() {
-const height = 30 + Math.random() * 20;
-cactuses.push({
-x: canvas.width + 10,
-y: canvas.height - height,
-width: 15,
-height: height,
-speed: 6
-});
-}
+  // Время появления первого кактуса после старта
+  const firstCactusDelay = 3000; // 3 секунды
 
-function updateGame() {
-if (!running) return;
+  // Таймеры и обработчики
+  let lastTimestamp = 0;
+  let cactusTimer = 0;
+  let firstCactusTimeout;
 
-javascript
-Копировать
-Редактировать
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-// Обновление динозавра
-dino.update();
-dino.draw();
-
-// Обновление кактусов
-for (let i = cactuses.length - 1; i >= 0; i--) {
-  const c = cactuses[i];
-  c.x -= c.speed;
-  ctx.fillStyle = '#228B22';
-  ctx.fillRect(c.x, c.y, c.width, c.height);
-
-  // Удаляем кактус, если он ушёл за экран
-  if (c.x + c.width < 0) {
-    cactuses.splice(i, 1);
-    score++;
-    scoreDiv.textContent = score;
-  } else {
-    // Проверка столкновения с динозавром
-    if (
-      dino.x < c.x + c.width &&
-      dino.x + dino.width > c.x &&
-      dino.y < c.y + c.height &&
-      dino.y + dino.height > c.y
-    ) {
-      running = false;
-      alert('Игра окончена! Ваш счет: ' + score);
-      stopGame();
-      return;
+  // Управление прыжком
+  function jump() {
+    if (!isJumping) {
+      velocityY = -18;
+      isJumping = true;
     }
   }
-}
 
-// Таймер спавна кактусов
-cactusTimer++;
-if (cactusTimer > cactusInterval) {
-  spawnCactus();
-  cactusTimer = 0;
-  cactusInterval = 90 + Math.random() * 60; // новый случайный интервал
-}
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      jump();
+    }
+  });
 
-requestAnimationFrame(updateGame);
-}
+  function resetGame() {
+    cactuses = [];
+    score = 0;
+    speed = 6;
+    velocityY = 0;
+    isJumping = false;
+    dinoY = canvas.height - dinoHeight - 20;
+    scoreDiv.textContent = score;
+    lastTimestamp = 0;
+    cactusTimer = 0;
+  }
 
-function startGame() {
-running = true;
-score = 0;
-scoreDiv.textContent = score;
-cactuses = [];
-dino.y = canvas.height - dino.height;
-dino.vy = 0;
-cactusTimer = 0;
-cactusInterval = 90 + Math.random() * 60;
-mainContent.style.display = 'none';
-gameContainer.style.display = 'block';
-updateGame();
-}
+  function gameLoop(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const deltaTime = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
 
-function stopGame() {
-running = false;
-mainContent.style.display = 'flex';
-gameContainer.style.display = 'none';
-}
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Обработка прыжка
-document.addEventListener('keydown', (e) => {
-if (e.code === 'Space' || e.code === 'ArrowUp') {
-if (running) dino.jump();
-}
-});
+    // Обновляем счет - увеличиваем каждую секунду
+    score += deltaTime * 0.01; // плавный рост счета
+    scoreDiv.textContent = Math.floor(score);
 
-gameBtn.addEventListener('click', startGame);
-logoBtn.addEventListener('click', () => {
-if (running) stopGame();
-});
+    // Рисуем игрока
+    // Прыжок
+    velocityY += gravity;
+    dinoY += velocityY;
+    if (dinoY > canvas.height - dinoHeight - 20) {
+      dinoY = canvas.height - dinoHeight - 20;
+      isJumping = false;
+      velocityY = 0;
+    }
+    ctx.drawImage(dinoImg, dinoX, dinoY, dinoWidth, dinoHeight);
 
-// Модальное окно показываем сразу, пока не подтвердили
-// Для удобства можно сразу скрыть, если хочешь — иначе вызывай proceedSite вручную.
-// Пока оставим открытым.
+    // Обновление и отрисовка кактусов
+    cactusTimer += deltaTime;
+    if (cactusTimer > 1500 && cactuses.length === 0) {
+      // первый кактус появляется через 3 секунды, потом каждые 1.5 секунды
+      if (!firstCactusTimeout) {
+        firstCactusTimeout = setTimeout(() => {
+          cactuses.push({ x: canvas.width, y: canvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
+          cactusTimer = 0;
+        }, firstCactusDelay);
+      }
+    }
+    if (cactusTimer > 1500 && cactuses.length > 0) {
+      cactuses.push({ x: canvas.width, y: canvas.height - cactusHeight - 20, width: cactusWidth, height: cactusHeight });
+      cactusTimer = 0;
+    }
 
-</script> </body> </html>
+    // Движение и отрисовка препятствий
+    for (let i = 0; i < cactuses.length; i++) {
+      let c = cactuses[i];
+      c.x -= speed;
+      ctx.drawImage(cactusImg, c.x, c.y, c.width, c.height);
+
+      // Проверка столкновения
+      if (
+        dinoX < c.x + c.width &&
+        dinoX + dinoWidth > c.x &&
+        dinoY < c.y + c.height &&
+        dinoY + dinoHeight > c.y
+      ) {
+        // Столкновение — конец игры
+        gameRunning = false;
+        alert('Игра окончена! Ваш счет: ' + Math.floor(score));
+        resetGame();
+        showMainContent();
+        return;
+      }
+    }
+
+    // Удаляем препятствия, вышедшие за пределы экрана
+    cactuses = cactuses.filter(c => c.x + c.width > 0);
+
+    // Увеличиваем скорость со временем для сложности
+    speed += 0.0005;
+
+    if (gameRunning) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
+
+  function hideMainContent() {
+    mainContent.style.display = 'none';
+    gameContainer.style.display = 'block';
+  }
+
+  function showMainContent() {
+    mainContent.style.display = 'flex';
+    gameContainer.style.display = 'none';
+  }
+
+  // Запуск игры по кнопке
+  gameBtn.addEventListener('click', () => {
+    resetGame();
+    hideMainContent();
+    gameRunning = true;
+    firstCactusTimeout = null;
+    requestAnimationFrame(gameLoop);
+  });
+
+  // Возврат по клику на логотип
+  logoBtn.addEventListener('click', () => {
+    if (gameRunning) {
+      gameRunning = false;
+      resetGame();
+      showMainContent();
+    }
+  });
+</script>
+</body>
+</html>
